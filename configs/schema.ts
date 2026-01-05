@@ -1,55 +1,89 @@
 import { integer, pgTable, json,varchar, timestamp, boolean } from "drizzle-orm/pg-core";
 export const usersTable = pgTable("users", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    userName: varchar({ length: 255 }).notNull(),
-    email: varchar({ length: 255 }).notNull().unique(),
+    name: varchar({length: 255}).notNull(),
+    isPro: boolean(),
+
+    email: varchar({length: 255}).notNull().unique(),
     password: varchar("password", { length: 255 }).notNull(),
-    avatarUrl: varchar(),
-    createdAt: timestamp("created_at").defaultNow().notNull()
+    credits: integer().default(1),
+    createdAt: varchar(),
+    avatarUrl: varchar()
 });
 
 
-export const coursesTable = pgTable('courses', {
+export const workflowsTable = pgTable("workflows", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    cid: varchar().notNull(),
+    workflowId: varchar().notNull().unique(),
+    name: varchar({length: 255}).notNull(),
+    createdBy: varchar().references(() => usersTable.email),
+    createdAt: varchar(),
+    updatedAt: varchar(),
+
+});
+
+export const nodesTable = pgTable("nodes", {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+
+    workflowId: varchar().references(() => workflowsTable.workflowId),
+    nodeId: varchar().notNull(),
+
+    type: varchar().notNull(),
+    position: json(),
+    data: json(),
+
+    credentialId: varchar().references(() => credentialTable.credentialId),
+
+    createdAt: varchar(),
+    updatedAt: varchar(),
+});
+
+export const connectionsTable = pgTable("connections", {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    workflowId: varchar().references(() => workflowsTable.workflowId),
+    fromNodeId: varchar(),
+    toNodeId: varchar(),
+    fromOutput: varchar(),
+    toInput: varchar()
+});
+
+export const credentialTable = pgTable('credentials', {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+
+    credentialId: varchar().notNull().unique(), // публичный id
+    name: varchar().notNull(),
+    type: varchar().notNull(),
+
+
+    value: varchar(),
+    createdBy: varchar().references(() => usersTable.email),
+
+    createdAt: timestamp("created_at", { withTimezone: true })
+        .defaultNow()
+        .notNull(),
+
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+        .defaultNow()
+        .notNull(),
+});
+
+export const executionTable = pgTable('executions', {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+
+    executionId: varchar().notNull().unique(),
     name: varchar(),
-    description: varchar(),
-    noOfChapters: integer().notNull(),
-    includeVideo: boolean().default(false),
-    label: varchar().notNull(),
-    category: varchar(),
-    courseJson: json(),
-    courseContent: json().default({}),
-    bannerImageUrl: varchar().default(''),
-    userEmail: varchar('userEmail').references(() => usersTable.email).notNull(), // conntected to our user table`s email
-    createdAt: timestamp("created_at").defaultNow().notNull()
+    completedAt: timestamp("completed_at", { withTimezone: true })
+        .defaultNow(),
+
+    startedAt: timestamp("started_at", { withTimezone: true })
+        .defaultNow(),
+
+
+    createdBy: varchar().references(() => usersTable.email),
+    workflowId: varchar().references(() => workflowsTable.workflowId),
+    inngestEventId: varchar().notNull().unique(),
+    output: json(),
+    status: varchar().default('running'),
+    error: varchar(),
+    errorStack: varchar()
 })
-
-export const enrolledCourseTable = pgTable('enrolledCourse', {
-    id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    cid: varchar('cid').references(() => coursesTable.cid).notNull(), // conntected to our course table`s course id
-    userEmail: varchar('userEmail').references(() => usersTable.email).notNull(), // conntected to our user table`s email
-    completedChapters: json(),
-    homeworks: json().default({}),
-    materials: json().default({}),
-    practiceTasks: json().default({}),
-    createdAt: timestamp("created_at").defaultNow().notNull()
-})
-
-
-export const badgesTable = pgTable("badges", {
-    id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    code: varchar({ length: 255 }).notNull().unique(), // например "3_courses", "10_homeworks"
-    title: varchar({ length: 255 }).notNull(), // Название медали
-    description: varchar({ length: 500 }), // Описание
-    iconUrl: varchar(), // путь к иконке/медали
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-
-export const userBadgesTable = pgTable("user_badges", {
-    id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    userEmail: varchar("userEmail").references(() => usersTable.email).notNull(),
-    badgeId: integer().references(() => badgesTable.id).notNull(),
-    earnedAt: timestamp("earned_at").defaultNow().notNull(),
-});

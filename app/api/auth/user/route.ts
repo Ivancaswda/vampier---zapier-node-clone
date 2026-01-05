@@ -1,11 +1,11 @@
 import {verifyToken} from "@/lib/jwt";
-import {db} from "../../../../../configs/db";
-import {usersTable} from "../../../../../configs/schema";
+import {db}from "@/configs/db";
+import {usersTable} from "@/configs/schema";
 import { eq } from "drizzle-orm"
 import { cookies } from "next/headers"
 
 export async function GET(req: Request) {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
     const token = cookieStore.get("token")?.value
 
     if (!token) {
@@ -26,12 +26,13 @@ export async function GET(req: Request) {
         return Response.json({
             user: {
                 email: user.email,
-                userName: user.userName,
+                userName: user.name,
                 createdAt: user.createdAt,
-                avatarUrl: user?.avatarUrl
+                avatarUrl: user?.avatarUrl,
+                isPro: user?.isPro,
             },
         })
     } catch (err: any) {
         return new Response("Invalid token", { status: 401 })
     }
-}  
+}

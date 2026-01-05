@@ -6,6 +6,7 @@ interface User {
     email: string
     userName: string
     avatarUrl?: string | null
+    isPro?: boolean
 }
 
 interface AuthContextType {

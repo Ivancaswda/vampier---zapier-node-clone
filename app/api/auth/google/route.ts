@@ -1,55 +1,83 @@
-import { NextResponse} from "next/server";
-import {usersTable} from "../../../../../configs/schema";
+import { NextResponse } from "next/server";
+import {db} from "@/configs/db";
+import { usersTable } from "@/configs/schema";
+import { eq } from "drizzle-orm";
+import { generateToken } from "@/lib/jwt";
 
-import {eq} from "drizzle-orm";
-import {generateToken} from "@/lib/jwt";
-import bcrypt from "bcryptjs";
-import {db} from "../../../../../configs/db";
 export async function POST(req: Request) {
     try {
-        const body = await req.json()
-        const { email, userName, avatarUrl } = body;
+        const { access_token } = await req.json();
 
-        if (!email) {
-            return NextResponse.json({ error: 'Missing email' }, { status: 400 });
+        if (!access_token) {
+            return NextResponse.json({ error: "Missing Google access token" }, { status: 400 });
         }
 
-        let user = await db
-            .select()
-            .from(usersTable)
-            .where(eq(usersTable.email, email))
-            .limit(1);
 
-        if (!user.length) {
-            const tempPassword = await bcrypt.hash(Math.random().toString(36), 10);
-
-            await db.insert(usersTable).values({
-                userName,
-                email,
-                password: tempPassword,
-                avatarUrl,
-                createdAt: new Date(),
-            });
-        }
-
-        const jwtToken = generateToken({ email, userName });
-
-        const res = NextResponse.json({
-            user: { email, userName, avatarUrl },
-            token: jwtToken,
+        const googleRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+            headers: { Authorization: `Bearer ${access_token}` },
         });
 
-        res.cookies.set('token', jwtToken, {
+        if (!googleRes.ok) {
+            return NextResponse.json({ error: "Invalid Google token" }, { status: 401 });
+        }
+
+        const googleUser = await googleRes.json();
+
+        const { email, name, picture } = googleUser;
+
+
+        const existingUsers = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
+        let user;
+
+        if (existingUsers.length === 0) {
+
+            const inserted = await db
+                .insert(usersTable)
+                .values({
+                    userName: name || "Без имени",
+                    email,
+                    password: "", // не нужен для Google
+                    credits: 1,
+                    avatarUrl: picture,
+                    createdAt: new Date(),
+                })
+                .returning();
+            user = inserted[0];
+        } else {
+
+            const updated = await db
+                .update(usersTable)
+                .set({ avatarUrl: picture, name })
+                .where(eq(usersTable.email, email))
+                .returning();
+            user = updated[0];
+        }
+
+
+        const token = generateToken({ email: user.email, userName: user.name });
+
+        const res = NextResponse.json({
+            message: "Google login successful",
+            token,
+            user: {
+                email: user.email,
+                userName: user.name,
+                avatarUrl: user.avatarUrl,
+                credits: user.credits,
+            },
+        });
+
+        res.cookies.set("token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            path: '/',
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
             maxAge: 60 * 60 * 24 * 7,
         });
 
         return res;
-    } catch (error: any) {
-        console.error('failed to login via google', error);
-        return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    } catch (err) {
+        console.error("❌ Google login error:", err);
+        return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 }
