@@ -201,10 +201,9 @@ const HomePage = () => {
         <div className="flex flex-col min-h-screen bg-black text-white">
 
             <header className="flex justify-between items-center p-6 bg-gray-900/90">
-                <div className="flex items-center px-4 mb-4 cursor-pointer gap-2 text-xl justify-start font-bold text-primary  ">
 
-                    <PlayCircleIcon  height={30} className='text-primary w-[30px] h-[30px] ' width={30}/>
-                    Vampier
+                <div>
+                    <Image width={140} height={140} className='w-[90px] h-[80px]' src='/logo.png' alt='logo' />
                 </div>
                 {!loading ? <>
 

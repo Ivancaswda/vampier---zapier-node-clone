@@ -53,10 +53,8 @@ function Signup() {
 
     return ( <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary via-primary/80 to-primary/60 px-4">
             <div className="w-full max-w-md rounded-2xl bg-white/90 shadow-2xl p-8 backdrop-blur-md dark:bg-zinc-900">
-                <div className="flex items-center gap-1 text-lg justify-center font-bold text-primary  mb-6">
-
-                    <PlayCircleIcon height={40} className='text-primary ' width={40}/>
-                    Vampier
+                <div className='flex items-center justify-center w-full'>
+                    <Image width={140} height={140} className='w-[90px] h-[80px]' src='/logo.png' alt='logo' />
                 </div>
 
 

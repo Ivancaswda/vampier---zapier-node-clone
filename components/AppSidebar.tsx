@@ -108,10 +108,9 @@ const AppSidebar = () => {
             <SidebarHeader>
                 <SidebarMenuItem>
                 <Link href="/" >
-                    <div className="flex items-center px-4 mb-4 cursor-pointer gap-2 text-xl justify-start font-bold text-primary  ">
 
-                        <PlayCircleIcon  height={30} className='text-primary w-[30px] h-[30px] ' width={30}/>
-                        Vampier
+                    <div>
+                        <Image width={140} height={140} className='w-[90px] h-[80px]' src='/logo.png' alt='logo' />
                     </div>
                 </Link>
 
