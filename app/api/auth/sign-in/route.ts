@@ -38,6 +38,7 @@ export async function POST(req: Request) {
             user: {
                 email: user.email,
                 userName: user.name,
+                isPro: user.isPro
             }
         })
 

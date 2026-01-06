@@ -31,6 +31,7 @@ export async function POST(req: Request) {
             email,
             password: hashedPassword,
             credits: 1,
+            isPro: false,
             avatarUrl: null,
             createdAt: new Date().toISOString(),
             avatarUrl: ""
@@ -48,6 +49,7 @@ export async function POST(req: Request) {
                 avatarUrl: user.avatarUrl,
                 credits: user.credits,
                 createdAt: user.createdAt,
+                isPro:user.isPro
             },
         });
 

@@ -40,6 +40,7 @@ export async function POST(req: Request) {
                     credits: 1,
                     avatarUrl: picture,
                     createdAt: new Date(),
+                    isPro: false
                 })
                 .returning();
             user = inserted[0];
@@ -64,6 +65,7 @@ export async function POST(req: Request) {
                 userName: user.name,
                 avatarUrl: user.avatarUrl,
                 credits: user.credits,
+                isPro: user.isPro
             },
         });
 
