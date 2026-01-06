@@ -3,7 +3,7 @@ import {db} from "@/configs/db";
 
 import getServerUser from "@/lib/auth-server";
 import {credentialTable} from "@/configs/schema";
-import {eq} from "drizzle-orm";
+import {desc, eq} from "drizzle-orm";
 export async function GET(req: NextRequest) {
 
 
@@ -13,14 +13,17 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const result = await db.select().from(credentialTable)
-        .where(eq(credentialTable.createdBy, user?.email))
+    const credentials = await db
+        .select()
+        .from(credentialTable)
+        .where(eq(credentialTable.createdBy, user.email))
+        .orderBy(desc(credentialTable.createdAt));
 
 
 
 
 
     return NextResponse.json({
-        credentials:result
+        credentials:credentials
     })
 }

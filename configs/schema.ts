@@ -17,8 +17,13 @@ export const workflowsTable = pgTable("workflows", {
     workflowId: varchar().notNull().unique(),
     name: varchar({length: 255}).notNull(),
     createdBy: varchar().references(() => usersTable.email),
-    createdAt: varchar(),
-    updatedAt: varchar(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+        .defaultNow()
+        .notNull(),
+
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+        .defaultNow()
+        .notNull(),
 
 });
 

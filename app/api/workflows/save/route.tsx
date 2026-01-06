@@ -24,7 +24,6 @@ export async function POST(req: NextRequest) {
             .update(workflowsTable)
             .set({
                 name,
-                updatedAt: now,
             })
             .where(
                 and(

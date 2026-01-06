@@ -10,12 +10,22 @@ import Link from "next/link";
 import {formatDateRu, formatDuration} from "@/lib/utils";
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
 import {Button} from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog";
 
 const ExecutionIdPage = () => {
     const [showStackTrace, setShowStackTrace] = useState<boolean>(false)
     const {executionId} = useParams()
     const [execution, setExecution] = useState<any>()
     const [loading, setLoading] = useState<boolean>()
+    const [deleteOpen, setDeleteOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     useEffect(() => {
 
             if (!executionId) return;
@@ -179,6 +189,60 @@ const ExecutionIdPage = () => {
 
                     </CardContent>
                 </Card>
+                <Button className='w-full bg-primary hover:bg-primary/70 py-6! text-lg'
+                    variant="destructive"
+                    size="sm"
+                        onClick={() => setDeleteOpen(true)}
+                >
+                    🗑 Удалить
+                </Button>
+                <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+                    <DialogContent className="sm:max-w-sm">
+                        <DialogHeader>
+                            <DialogTitle>Удалить execution?</DialogTitle>
+                            <DialogDescription>
+                                Это действие нельзя отменить. Execution будет удалён навсегда.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <DialogFooter className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setDeleteOpen(false)}
+                                disabled={isDeleting}
+                            >
+                                Отмена
+                            </Button>
+
+                            <Button
+                                variant="destructive"
+                                disabled={isDeleting}
+                                onClick={async () => {
+                                    try {
+                                        setIsDeleting(true);
+
+                                        await axios.delete("/api/executions/remove", {
+                                            data: { executionId }
+                                        });
+
+                                        toast.success("Execution удалён");
+                                        window.location.href = "/executions";
+                                    } catch {
+                                        toast.error("Не удалось удалить execution");
+                                    } finally {
+                                        setIsDeleting(false);
+                                    }
+                                }}
+                            >
+                                {isDeleting ? (
+                                    <Loader2Icon className="animate-spin" />
+                                ) : (
+                                    "Удалить"
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     )

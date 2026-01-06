@@ -142,7 +142,7 @@ export const discordNode = (props: any) => {
                         />
 
                         <p className="text-gray-600">
-                            URL вебхука из настроек Discord
+                            Чтобы получить перейдите в настройки вашего сервера - Интеграции - создайте ваш вебхук URL - скопируйте и вставьте в Vampier
                         </p>  </div>
 
 

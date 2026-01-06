@@ -3,7 +3,7 @@ import {db} from "@/configs/db";
 
 import getServerUser from "@/lib/auth-server";
 import {credentialTable, executionTable} from "@/configs/schema";
-import {eq} from "drizzle-orm";
+import {desc, eq} from "drizzle-orm";
 export async function GET(req: NextRequest) {
 
 
@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
 
     const result = await db.select().from(executionTable)
         .where(eq(executionTable.createdBy, user?.email))
+        .orderBy(desc(executionTable.startedAt));
 
 
 

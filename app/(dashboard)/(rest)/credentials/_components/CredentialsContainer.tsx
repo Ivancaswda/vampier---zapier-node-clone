@@ -15,7 +15,7 @@ import {
     Loader2Icon, SaveIcon,
     SearchIcon,
     SparkleIcon,
-    SunIcon
+    SunIcon, TrashIcon
 } from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
@@ -67,13 +67,7 @@ const CredentialsContainer = () => {
             w.name?.toLowerCase().includes(searchInput.toLowerCase())
         );
     }, [credentials, searchInput]);
-    const sortedCredentials = useMemo(() => {
-        return [...filteredCredentials].sort(
-            (a, b) =>
-                new Date(a.createdAt).getTime() -
-                new Date(b.createdAt).getTime()
-        );
-    }, [filteredCredentials]);
+
 
     const [name, setName] = useState("");
     const [type, setType] = useState("");
@@ -155,7 +149,7 @@ setLoading(true)
                 <Input
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder={'search workflow by name'}
+                    placeholder={'Введите название вашей учетной записи'}
                     className="pl-9"
                 />
             </div>
@@ -169,9 +163,9 @@ setLoading(true)
                 />
             )}
 
-            {sortedCredentials.length > 0 && (
+            {filteredCredentials.length > 0 && (
                 <div className="mt-6 flex flex-wrap items-center justify-start gap-3">
-                    {sortedCredentials.map((c) => {
+                    {filteredCredentials.map((c) => {
                         const Icon = credentialTypeIconMap[c.type];
                         return (
                             <div  onClick={() => {
@@ -265,6 +259,32 @@ setLoading(true)
 
 
                         </div>
+                        <Button
+                            size="icon"
+                            variant="outline"
+                            className="text-white bg-primary hover:bg-primary/70 w-full py-6! text-lg"
+                            onClick={async (e) => {
+                                e.stopPropagation();
+
+                                try {
+                                    await axios.delete("/api/credentials/remove", {
+                                        data: { credentialId: activeCredential.credentialId }
+                                    });
+
+                                    toast.success("Credential удалён");
+
+                                    setCredentials(prev =>
+                                        prev.filter(item => item.credentialId !== activeCredential.credentialId)
+                                    );
+                                    setOpen(false)
+                                } catch {
+                                    toast.error("Не удалось удалить credential");
+                                }
+                            }}
+                        >
+                            <TrashIcon/>
+                            Удалить
+                        </Button>
 
                         <div className="flex justify-end gap-2 mt-4">
                             <Button
